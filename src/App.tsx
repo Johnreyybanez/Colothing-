@@ -200,7 +200,7 @@ const App: React.FC = () => {
       {/* Sidebar Overlay for Mobile */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden no-print"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -209,7 +209,7 @@ const App: React.FC = () => {
       {!isSidebarOpen && (
         <button 
           onClick={() => setIsSidebarOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 hover:bg-gray-100 rounded-lg lg:flex hidden transition-all duration-200 border border-gray-200 bg-white text-gray-500 shadow-sm"
+          className="fixed top-4 left-4 z-50 p-2 hover:bg-gray-100 rounded-lg lg:flex hidden transition-all duration-200 border border-gray-200 bg-white text-gray-500 shadow-sm no-print"
           title="Open sidebar"
         >
           <PanelLeft size={20} />
@@ -219,7 +219,7 @@ const App: React.FC = () => {
       {/* Sidebar */}
       <aside className={`
         ${isSidebarOpen ? 'w-64 translate-x-0' : 'w-0 -translate-x-full'} 
-        bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300 fixed h-full z-50 overflow-hidden
+        bg-gray-50 border-r border-gray-200 flex flex-col transition-all duration-300 fixed h-full z-50 overflow-hidden no-print
       `}>
         <div className="p-4 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-3 overflow-hidden whitespace-nowrap">
@@ -269,7 +269,7 @@ const App: React.FC = () => {
         {!isSidebarOpen && <div className="hidden lg:block h-12" />}
 
         {/* Mobile Top Bar */}
-        <div className="flex items-center justify-between mb-6 lg:hidden sticky top-0 bg-gray-50/80 backdrop-blur-md z-30 py-2">
+        <div className="flex items-center justify-between mb-6 lg:hidden sticky top-0 bg-gray-50/80 backdrop-blur-md z-30 py-2 no-print">
           <button 
             onClick={() => setIsSidebarOpen(true)} 
             className="p-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"

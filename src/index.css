@@ -10,6 +10,27 @@
   }
 }
 
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    padding: 0;
+    margin: 0;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  aside {
+    display: none !important;
+  }
+}
+
 .glass-morphism {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);

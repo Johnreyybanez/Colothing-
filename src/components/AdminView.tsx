@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Tag, Box, AlertCircle, QrCode, Edit3, X } from 'lucide-react';
+import { Plus, Trash2, Tag, Box, AlertCircle, QrCode, Edit3, X, Printer } from 'lucide-react';
 import { Product, ProductVariant, Size } from '../types';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -24,6 +24,10 @@ export const AdminView = ({ products, onAddProduct, onUpdateProduct, onDeletePro
   const [variants, setVariants] = useState<Partial<ProductVariant>[]>([
     { id: Math.random().toString(36).substr(2, 9), size: 'M', color: 'Black', price: 599, stock: 10 }
   ]);
+
+  const handlePrintAllTags = () => {
+    window.print();
+  };
 
   const handleOpenAdd = () => {
     setEditingId(null);
@@ -87,18 +91,50 @@ export const AdminView = ({ products, onAddProduct, onUpdateProduct, onDeletePro
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Inventory</h1>
-          <p className="text-gray-500">Manage your clothing items and stock</p>
+          <h1 className="text-3xl font-bold text-gray-900 font-serif">Inventory</h1>
+          <p className="text-gray-500 font-serif italic">Manage your clothing items and stock</p>
         </div>
-        <button 
-          onClick={handleOpenAdd}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition-all"
-        >
-          <Plus size={20} />
-          Add Product
-        </button>
+        <div className="flex gap-3 w-full md:w-auto">
+          <button 
+            onClick={handlePrintAllTags}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white text-gray-700 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 shadow-sm transition-all font-bold text-sm"
+          >
+            <Printer size={18} />
+            Print All QR Codes
+          </button>
+          <button 
+            onClick={handleOpenAdd}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition-all font-bold text-sm"
+          >
+            <Plus size={18} />
+            Add Product
+          </button>
+        </div>
+      </div>
+
+      {/* Hidden Print Section */}
+      <div className="hidden print:block">
+        <h2 className="text-center text-xl font-bold mb-8 uppercase border-b-2 pb-2 font-serif">Product QR Codes & Brand</h2>
+        <div className="grid grid-cols-4 gap-8">
+          {products.flatMap(p => p.variants).map((variant) => {
+            const product = products.find(prod => prod.id === variant.productId);
+            return (
+              <div key={variant.id} className="flex flex-col items-center justify-center p-4 border-2 border-black rounded-none break-inside-avoid">
+                <p className="text-[12px] font-bold font-serif uppercase mb-2 text-center h-8 flex items-center text-black">
+                  {product?.brand || 'Brand'}
+                </p>
+                <div className="bg-white p-1">
+                  <QRCodeSVG value={variant.qrCode} size={140} />
+                </div>
+                <p className="text-[10px] font-mono mt-2 text-black font-bold">
+                  {variant.sku}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {isModalOpen && (
@@ -282,7 +318,7 @@ export const AdminView = ({ products, onAddProduct, onUpdateProduct, onDeletePro
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 no-print">
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden group">
             <div className="h-48 overflow-hidden relative">
