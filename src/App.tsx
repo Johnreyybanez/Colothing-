@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Package, Settings, LogOut, Menu, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Settings, LogOut, Menu, PanelLeftClose, PanelLeft, Download, Upload } from 'lucide-react';
 import { Product, Sale } from './types';
 import { initDB, getDBProducts, saveDBProduct, deleteDBProduct, saveDBSale, getDBSales } from './storage';
 import { AdminView } from './components/AdminView';
@@ -59,6 +59,71 @@ const App: React.FC = () => {
     setSettings(newSettings);
     localStorage.setItem('pos_app_settings', JSON.stringify(newSettings));
     updateFavicon(newSettings.favicon);
+  };
+
+  const handleExportData = async () => {
+    // Fetch latest from DB to be absolutely sure
+    const latestProducts = await getDBProducts();
+    const latestSales = await getDBSales();
+    
+    const allData = {
+      products: latestProducts,
+      sales: latestSales,
+      settings,
+      version: '1.0',
+      timestamp: Date.now()
+    };
+    
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fashion-pos-db-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const importedData = JSON.parse(event.target?.result as string);
+        if (confirm('CRITICAL: This will PERMANENTLY REPLACE your current database with the imported file. Are you sure you want to proceed?')) {
+          // 1. Update IndexedDB
+          const { clearAllDBData, saveDBProduct, saveDBSale } = await import('./storage');
+          await clearAllDBData();
+          
+          // Use sequential awaits to ensure DB integrity
+          if (importedData.products) {
+            for (const p of importedData.products) {
+              await saveDBProduct(p);
+            }
+          }
+          if (importedData.sales) {
+            for (const s of importedData.sales) {
+              await saveDBSale(s);
+            }
+          }
+          
+          // 2. Update Settings
+          if (importedData.settings) {
+            saveSettings(importedData.settings);
+          }
+          
+          alert('Database restored successfully! The application will now reload.');
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Import failed", error);
+        alert('Failed to import database. Please ensure the file is a valid POS export.');
+      }
+    };
+    reader.readAsText(file);
   };
 
   useEffect(() => {
@@ -316,6 +381,39 @@ const App: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4 font-serif italic">Database Control</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button 
+                        onClick={handleExportData}
+                        className="flex flex-col items-center justify-center gap-2 p-6 bg-indigo-900 text-white rounded-2xl hover:bg-indigo-950 transition-all font-serif group"
+                      >
+                        <Download size={24} className="group-hover:scale-110 transition-transform" />
+                        <span className="font-bold text-lg">Export Latest DB</span>
+                        <span className="text-[10px] opacity-60">Full Backup (.json)</span>
+                      </button>
+                      
+                      <div className="relative">
+                        <input 
+                          type="file" 
+                          accept=".json"
+                          onChange={handleImportData}
+                          className="hidden" 
+                          id="db-import"
+                        />
+                        <label 
+                          htmlFor="db-import"
+                          className="flex flex-col items-center justify-center gap-2 p-6 bg-white text-indigo-900 border-2 border-indigo-900 rounded-2xl hover:bg-indigo-50 cursor-pointer transition-all font-serif group"
+                        >
+                          <Upload size={24} className="group-hover:scale-110 transition-transform" />
+                          <span className="font-bold text-lg">Import Latest DB</span>
+                          <span className="text-[10px] opacity-60">Restore Database</span>
+                        </label>
+                      </div>
+                    </div>
+                    <p className="text-xs text-indigo-400 mt-4 text-center italic">Transfer your entire boutique system (Inventory, Sales & Settings) between devices.</p>
                   </div>
 
                   <div className="pt-6 border-t border-gray-100">

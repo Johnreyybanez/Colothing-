@@ -89,6 +89,19 @@ export const getDBSales = (): Promise<Sale[]> => {
   });
 };
 
+export const clearAllDBData = (): Promise<void> => {
+  return new Promise((resolve) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onsuccess = (event: any) => {
+      const db = event.target.result;
+      const transaction = db.transaction(['products', 'sales'], 'readwrite');
+      transaction.objectStore('products').clear();
+      transaction.objectStore('sales').clear();
+      transaction.oncomplete = () => resolve();
+    };
+  });
+};
+
 // Legacy LocalStorage fallback for initial data
 const STORAGE_KEYS = {
   PRODUCTS: 'pos_products',
